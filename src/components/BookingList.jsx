@@ -1,0 +1,52 @@
+import { useState } from 'react'
+import BookingCard from './BookingCard'
+import { getStatus } from '../lib/utils'
+
+const FILTERS = ['All', 'Upcoming', 'Active', 'Past']
+
+export default function BookingList({ bookings, onDelete, loading }) {
+    const [filter, setFilter] = useState('All')
+
+    const filtered = bookings.filter(b => {
+        if (filter == 'All') return true
+        return getStatus(b.check_in, b.check_out) == filter.toLowerCase()
+    })
+
+    const sorted = [...filtered].sort((a, b) => a.check_in.localeCompare(b.check_in))
+
+    return (
+    <div className="mt-6">
+      <h2 className="text-base font-medium text-gray-700 mb-3">All bookings</h2>
+
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {FILTERS.map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${
+              filter === f
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'border-gray-200 text-gray-500 hover:border-gray-400'
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <p className="text-center text-gray-400 py-10">Loading...</p>
+      ) : sorted.length === 0 ? (
+        <p className="text-center text-gray-400 py-10">No bookings here yet</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {sorted.map(b => (
+            <BookingCard key={b.id} booking={b} onDelete={onDelete} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
