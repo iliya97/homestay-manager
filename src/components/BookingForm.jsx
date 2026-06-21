@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 const EMPTY = { guest_name: '', check_in: '', check_out: '', phone_number: '' }
 
@@ -6,6 +6,9 @@ export default function BookingForm({ onAdd, bookings }) {
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const checkInRef = useRef(null)
+  const checkOutRef = useRef(null)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -16,12 +19,11 @@ export default function BookingForm({ onAdd, bookings }) {
     setError('')
   }
 
-  function handleDateBlur(e) {
-    const { name, value } = e.target
-    if (value !== form[name]) {
-      setForm(prev => ({ ...prev, [name]: value }))
-      setError('')
-    }
+  function clearDate(name) {
+    const ref = name === 'check_in' ? checkInRef : checkOutRef
+    if (ref.current) ref.current.value = ''
+    setForm(prev => ({ ...prev, [name]: '' }))
+    setError('')
   }
 
   async function handleSubmit() {
@@ -73,28 +75,38 @@ export default function BookingForm({ onAdd, bookings }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           <div>
-            <label className="text-sm text-gray-500 mb-1 block">Check-in</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-sm text-gray-500">Check-in</label>
+              {form.check_in && (
+                <button type="button" onClick={() => clearDate('check_in')} className="text-sm text-gray-400 hover:text-gray-600">Clear</button>
+              )}
+            </div>
             <input
+              ref={checkInRef}
               type="date"
               name="check_in"
               value={form.check_in}
               min={today}
               onChange={handleChange}
-              onBlur={handleDateBlur}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
             />
           </div>
           <div>
-            <label className="text-sm text-gray-500 mb-1 block">Check-out</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-sm text-gray-500">Check-out</label>
+              {form.check_out && (
+                <button type="button" onClick={() => clearDate('check_out')} className="text-sm text-gray-400 hover:text-gray-600">Clear</button>
+              )}
+            </div>
             <input
+              ref={checkOutRef}
               type="date"
               name="check_out"
               value={form.check_out}
               min={form.check_in || today}
               onChange={handleChange}
-              onBlur={handleDateBlur}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
             />
           </div>
