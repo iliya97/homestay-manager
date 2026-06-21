@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import BookingCard from './BookingCard'
+import BookingModal from './BookingModal'
 import { getStatus } from '../lib/utils'
 
-const FILTERS = ['All', 'Upcoming', 'Active', 'Past']
+const FILTERS = ['All', 'Upcoming', 'Active', 'Past', 'Cancelled']
 
-export default function BookingList({ bookings, onDelete, loading }) {
+export default function BookingList({ bookings, onDelete, onCancel, loading }) {
     const [filter, setFilter] = useState('All')
+    const [selected, setSelected] = useState(null)
 
     const filtered = bookings.filter(b => {
-        if (filter == 'All') return true
-        return getStatus(b.check_in, b.check_out) == filter.toLowerCase()
+        if (filter === 'Cancelled') return b.status === 'cancelled'
+        if (filter === 'All') return b.status !== 'cancelled'
+        return b.status !== 'cancelled' && getStatus(b.check_in, b.check_out) === filter.toLowerCase()
     })
 
     const sorted = [...filtered].sort((a, b) => a.check_in.localeCompare(b.check_in))
@@ -43,10 +46,17 @@ export default function BookingList({ bookings, onDelete, loading }) {
       ) : (
         <div className="flex flex-col gap-3">
           {sorted.map(b => (
-            <BookingCard key={b.id} booking={b} onDelete={onDelete} />
+            <BookingCard key={b.id} booking={b} onDelete={onDelete} onClick={() => setSelected(b)} />
           ))}
         </div>
       )}
+
+      <BookingModal
+        booking={selected}
+        onClose={() => setSelected(null)}
+        onDelete={onDelete}
+        onCancel={onCancel}
+      />
     </div>
   )
 }

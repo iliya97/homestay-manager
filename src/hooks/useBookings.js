@@ -28,7 +28,7 @@ export function useBookings() {
     async function addBooking(booking) {
         const { data, error } = await supabase
             .from('bookings')
-            .insert([booking])
+            .insert([{ ...booking, status: 'active' }])
             .select()
             .single()
 
@@ -49,5 +49,19 @@ export function useBookings() {
         return { data: { id } }
     }
 
-    return { bookings, loading, error, addBooking, deleteBooking, refetch: fetchBookings }
+    async function cancelBooking(id) {
+        const { data, error } = await supabase
+            .from('bookings')
+            .update({ status: 'cancelled' })
+            .eq('id', id)
+            .select()
+            .single()
+
+        if (error) return { error: error.message }
+
+        setBookings(prev => prev.map(b => b.id === id ? data : b))
+        return { data }
+    }
+
+    return { bookings, loading, error, addBooking, deleteBooking, cancelBooking, refetch: fetchBookings }
 }
