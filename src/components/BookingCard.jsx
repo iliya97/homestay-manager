@@ -6,13 +6,13 @@ const statusConfig = {
     past: { label: 'Past', className: 'bg-gray-100 text-gray-500' },
 }
 
-export default function BookingCard({ booking, onDelete}) {
+export default function BookingCard({ booking, onDelete, onClick }) {
     const status = getStatus(booking.check_in, booking.check_out)
     const { label, className } = statusConfig[status]
     const nights = nightCount(booking.check_in, booking.check_out)
 
     return (
-        <div className={`flex items-center gap-4 p-4 border border-gray-100 rounded-2xl ${status === 'past' ? 'opacity-50' : ''}`}>
+        <div onClick={onClick} className={`flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer active:bg-gray-50 ${status === 'past' ? 'opacity-50' : ''}`}>
             {/* Avatar */}
             <div className="w-11 h-11 min-w-11 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-medium text-sm">
                 {initials(booking.guest_name)}
@@ -34,7 +34,7 @@ export default function BookingCard({ booking, onDelete}) {
                 {label}
                 </span>
                 <button
-                onClick={() => onDelete(booking.id)}
+                onClick={e => { e.stopPropagation(); onDelete(booking.id) }}
                 className="text-gray-300 hover:text-red-400 transition-colors text-lg"
                 aria-label="Delete booking"
                 >
