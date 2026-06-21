@@ -56,6 +56,8 @@ export default function BookingForm({ onAdd, bookings }) {
       return
     }
 
+    if (checkInRef.current) checkInRef.current.value = ''
+    if (checkOutRef.current) checkOutRef.current.value = ''
     setForm(EMPTY)
   }
 
@@ -87,7 +89,7 @@ export default function BookingForm({ onAdd, bookings }) {
               ref={checkInRef}
               type="date"
               name="check_in"
-              value={form.check_in}
+              defaultValue=""
               min={today}
               onChange={handleChange}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
@@ -104,7 +106,7 @@ export default function BookingForm({ onAdd, bookings }) {
               ref={checkOutRef}
               type="date"
               name="check_out"
-              value={form.check_out}
+              defaultValue=""
               min={form.check_in || today}
               onChange={handleChange}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
@@ -113,7 +115,7 @@ export default function BookingForm({ onAdd, bookings }) {
         </div>
 
         <div>
-          <label className="text-sm text-gray-500 mb-1 block">phone_number number</label>
+          <label className="text-sm text-gray-500 mb-1 block">Phone number</label>
           <input
             type="tel"
             name="phone_number"
