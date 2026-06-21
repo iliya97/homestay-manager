@@ -10,8 +10,18 @@ export default function BookingForm({ onAdd, bookings }) {
   const today = new Date().toISOString().split('T')[0]
 
   function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    if ((name === 'check_in' || name === 'check_out') && value && value < today) return
+    setForm(prev => ({ ...prev, [name]: value }))
     setError('')
+  }
+
+  function handleDateBlur(e) {
+    const { name, value } = e.target
+    if (value !== form[name]) {
+      setForm(prev => ({ ...prev, [name]: value }))
+      setError('')
+    }
   }
 
   async function handleSubmit() {
@@ -72,6 +82,7 @@ export default function BookingForm({ onAdd, bookings }) {
               value={form.check_in}
               min={today}
               onChange={handleChange}
+              onBlur={handleDateBlur}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
             />
           </div>
@@ -83,6 +94,7 @@ export default function BookingForm({ onAdd, bookings }) {
               value={form.check_out}
               min={form.check_in || today}
               onChange={handleChange}
+              onBlur={handleDateBlur}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
             />
           </div>
@@ -95,7 +107,7 @@ export default function BookingForm({ onAdd, bookings }) {
             name="phone_number"
             value={form.phone_number}
             onChange={handleChange}
-            placeholder="e.g. 012-3456789"
+            placeholder="e.g. 0123456789"
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
           />
         </div>
