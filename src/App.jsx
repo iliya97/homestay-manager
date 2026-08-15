@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import { useBookings } from './hooks/useBookings'
+import Navbar from './components/Navbar'
+import Sidebar from './components/Sidebar'
+import Dashboard from './components/Dashboard'
 import BookingForm from './components/BookingForm'
 import BookingList from './components/BookingList'
-import StatsBar from './components/StatsBar'
+import BookingCalendar from './components/BookingCalendar'
 import { Toast, useToast } from './components/Toast'
 
 export default function App() {
   const { bookings, loading, addBooking, deleteBooking, cancelBooking } = useBookings()
   const { toast, show } = useToast()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [page, setPage] = useState('home')
 
   async function handleAdd(booking) {
     const result = await addBooking(booking)
@@ -27,12 +33,46 @@ export default function App() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      <h1 className="text-2xl font-medium mb-1">Rumah Acik</h1>
-      <p className="text-gray-500 text-sm mb-6">Booking tracker</p>
-      <StatsBar bookings={bookings} />
-      <BookingForm onAdd={handleAdd} bookings={bookings} />
-      <BookingList bookings={bookings} onDelete={handleDelete} onCancel={handleCancel} loading={loading} />
+    <div className="min-h-screen bg-gray-50">
+      <Navbar onMenuClick={() => setSidebarOpen(true)} activePage={page} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activePage={page}
+        onNavigate={setPage}
+      />
+
+      <main className="max-w-lg mx-auto px-4 pt-20 pb-10">
+        {page === 'home' && (
+          <>
+            <Dashboard bookings={bookings} onNavigate={setPage} />
+            <BookingCalendar bookings={bookings} />
+          </>
+        )}
+
+        {page === 'bookings' && (
+          <>
+            <BookingCalendar bookings={bookings} />
+            <BookingForm onAdd={handleAdd} bookings={bookings} />
+            <BookingList bookings={bookings} onDelete={handleDelete} onCancel={handleCancel} loading={loading} />
+          </>
+        )}
+
+        {page === 'customers' && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-4xl mb-4">👤</p>
+            <p className="text-gray-500 text-sm">Customers — coming soon</p>
+          </div>
+        )}
+
+        {page === 'expenses' && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-4xl mb-4">💸</p>
+            <p className="text-gray-500 text-sm">Expenses — coming soon</p>
+          </div>
+        )}
+      </main>
+
       <Toast message={toast} />
     </div>
   )

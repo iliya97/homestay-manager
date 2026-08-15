@@ -1,6 +1,14 @@
 import { useState, useRef } from 'react'
 
-const EMPTY = { guest_name: '', check_in: '', check_out: '', phone_number: '' }
+const EMPTY = {
+  guest_name: '',
+  check_in: '',
+  check_out: '',
+  phone_number: '',
+  no_of_adults: 1,
+  no_of_children: 0,
+  no_of_guests: 1
+}
 
 export default function BookingForm({ onAdd, bookings }) {
   const [form, setForm] = useState(EMPTY)
@@ -14,7 +22,22 @@ export default function BookingForm({ onAdd, bookings }) {
 
   function handleChange(e) {
     const { name, value } = e.target
+
     if ((name === 'check_in' || name === 'check_out') && value && value < today) return
+
+    if (name === 'no_of_adults' || name === 'no_of_children') {
+      const numericValue = value === '' ? '' : Number(value)
+      setForm(prev => {
+        const next = { ...prev, [name]: numericValue }
+        const adults = Number(next.no_of_adults || 0)
+        const children = Number(next.no_of_children || 0)
+        next.no_of_guests = adults + children
+        return next
+      })
+      setError('')
+      return
+    }
+
     setForm(prev => ({ ...prev, [name]: value }))
     setError('')
   }
@@ -27,10 +50,11 @@ export default function BookingForm({ onAdd, bookings }) {
   }
 
   async function handleSubmit() {
-    const { guest_name, check_in, check_out, phone_number } = form
+    const { guest_name, check_in, check_out, phone_number, no_of_adults, no_of_children } = form
+    const totalGuests = Number(no_of_adults || 0) + Number(no_of_children || 0)
 
-    if (!guest_name || !check_in || !check_out || !phone_number) {
-      setError('Please fill in all fields.')
+    if (!guest_name || !check_in || !check_out || !phone_number || Number(no_of_adults || 0) < 1 || totalGuests < 1) {
+      setError('Please fill in all fields with at least 1 adult.')
       return
     }
     if (check_out <= check_in) {
@@ -48,7 +72,7 @@ export default function BookingForm({ onAdd, bookings }) {
     }
 
     setSaving(true)
-    const { error: saveError } = await onAdd(form)
+    const { error: saveError } = await onAdd({ ...form, no_of_guests: totalGuests })
     setSaving(false)
 
     if (saveError) {
@@ -124,6 +148,37 @@ export default function BookingForm({ onAdd, bookings }) {
             placeholder="e.g. 0123456789"
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
           />
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-500 mb-1 block">Number of Guests</label>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Adults</label>
+              <input
+                type="number"
+                name="no_of_adults"
+                value={form.no_of_adults}
+                onChange={handleChange}
+                min="1"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Children below 12</label>
+              <input
+                type="number"
+                name="no_of_children"
+                value={form.no_of_children}
+                onChange={handleChange}
+                min="0"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-gray-400"
+              />
+            </div>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
+            Total guests: {Number(form.no_of_adults || 0) + Number(form.no_of_children || 0)}
+          </p>
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
